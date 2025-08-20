@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Timber Estimate Calculator</title>
+  <style>
+    :root { 
+      --bg: #f7faff; 
+      --card-bg: #ffffff; 
+      --line: #e2e8f0; 
+      --text: #1a202c;
+      --text-light: #4a5568;
+      --primary: #2d3748; 
+      --primary-text: #ffffff;
+      --danger: #e53e3e;
+      --danger-bg: #fff5f5;
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      margin: 0;
+      line-height: 1.6;
+    }
+    
+    .container {
+      max-width: 1100px;
+      margin: 32px auto;
+      padding: 0 16px;
+    }
+    
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,.04), 0 2px 4px -1px rgba(0,0,0,.03);
+      display: flex;
+      flex-direction: column;
+      max-height: calc(100vh - 64px);
+    }
+    
+    .card-header { padding: 24px; }
+    .card-body { overflow-y: auto; padding: 0 24px; }
+    .card-footer { padding: 24px; margin-top: auto; }
+    
+    h1 {
+      margin: 0 0 4px;
+      font-size: 24px;
+      font-weight: 600;
+    }
+    
+    .topbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--line);
+    }
+    
+    .date { color: var(--text-light); }
+    
+    .controls {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    
+    input[type="number"], input[type="text"] {
+      padding: 8px 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background-color: #fff;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    input::placeholder { color: #a0aec0; }
+    input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(45, 55, 72, 0.1);
+    }
+
+    .btn {
+      padding: 9px 16px;
+      border: 1px solid transparent;
+      background: var(--primary);
+      color: var(--primary-text);
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: background-color 0.2s;
+    }
+    .btn:hover { background: #1a202c; }
+    
+    .btn.secondary {
+      background: var(--card-bg);
+      color: var(--text);
+      border-color: var(--line);
+    }
+    .btn.secondary:hover { background: #f7fafc; border-color: #cbd5e0;}
+
+    /* Table Styles */
+    .table-wrapper { overflow-x: auto; border-radius: 12px; border: 1px solid var(--line); }
+    table { width: 100%; border-collapse: collapse; }
+    tbody { counter-reset: row-number; }
+    .row-number-cell::before {
+      counter-increment: row-number;
+      content: counter(row-number);
+      font-weight: 600;
+      color: var(--text-light);
+    }
+
+    thead th {
+      position: sticky;
+      top: 0;
+      background: #f9fafb;
+      border-bottom: 1px solid var(--line);
+      font-weight: 600;
+      color: var(--text-light);
+      text-transform: uppercase;
+      font-size: 12px;
+      letter-spacing: 0.5px;
+      z-index: 5;
+    }
+    th, td { border-right: 1px solid var(--line); padding: 10px 12px; text-align: center; }
+    th:last-child, td:last-child { border-right: none; }
+    tbody tr:nth-child(even) { background: #fdfdff; }
+    tbody input { width: 100%; text-align: right; }
+    tfoot td { font-weight: 600; background: #f9fafb; }
+    
+    .remove-btn {
+      background: var(--danger-bg);
+      color: var(--danger);
+      border: 1px solid transparent;
+      width: 36px;
+      height: 36px;
+      padding: 0;
+      font-size: 18px;
+      line-height: 1;
+      border-radius: 50%;
+    }
+    .remove-btn:hover { background: var(--danger); color: white; }
+
+    /* Summary & Actions Styles */
+    .summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; }
+    .summary .box {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 8px 12px;
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .summary .box .value-display, .summary .box .print-only { font-weight: 600; }
+    .summary .box input {
+      width: 80px;
+      text-align: right;
+      margin-left: 8px;
+    }
+    .muted { color: var(--text-light); }
+    .small { font-size: 14px; white-space: nowrap; }
+    
+    .actions {
+      margin-top: 24px;
+      padding-top: 24px;
+      border-top: 1px solid var(--line);
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+    }
+    .actions .btn { font-size: 16px; padding: 12px 24px; }
+    
+    .print-only { display: none; }
+
+    /* Mobile Responsive Styles */
+    @media (max-width: 768px) {
+      .container { margin: 0; padding: 0; }
+      .card { border-radius: 0; border: none; max-height: 100vh; }
+      
+      .card-header {
+        position: sticky;
+        top: 0;
+        background: var(--card-bg);
+        z-index: 10;
+        padding: 16px;
+      }
+      .card-body { padding: 16px; flex-shrink: 1; }
+      .card-footer { padding: 16px; }
+      
+      h1 { font-size: 20px; }
+      
+      .table-wrapper { border: none; overflow: visible; }
+      table, thead, tbody, tfoot, tr { display: block; }
+      thead { display: none; }
+      
+      tbody tr {
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        margin-bottom: 16px;
+        padding: 16px;
+        padding-top: 32px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        background: #fff !important;
+        position: relative;
+      }
+      tbody tr::before {
+        counter-increment: row-number;
+        content: "Item " counter(row-number);
+        position: absolute;
+        top: 10px;
+        left: 16px;
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--text-light);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      .row-number-cell { display: none; }
+      
+      td {
+        border: none; padding: 0; text-align: left;
+        display: flex; flex-direction: column;
+      }
+      td::before {
+        content: attr(data-label);
+        font-weight: 500;
+        font-size: 13px;
+        color: var(--text-light);
+        margin-bottom: 6px;
+      }
+      td.rate-cell, td.remove-cell { grid-column: 1 / -1; }
+      td.remove-cell { align-items: center; margin-top: 8px; }
+      .remove-btn { width: 100%; border-radius: 8px; }
+      tbody input { text-align: left; font-size: 16px; }
+      
+      tfoot { border-top: 1px solid var(--line); padding-top: 16px; }
+      tfoot tr { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; }
+      tfoot td { text-align: right; padding: 4px 0; }
+      tfoot td:nth-child(1) { grid-column: 1 / -1; text-align: right; }
+      tfoot td:nth-child(2) { font-size:18px; }
+      tfoot td:nth-child(3) { display: none; }
+      tfoot td:nth-child(4) { font-size:18px; }
+      tfoot td::before { content: attr(data-label); text-align: left; font-weight: 600; }
+    }
+
+    /* Print Styles */
+    @media print {
+      body { background: #fff; font-size: 10pt; }
+      .container { margin: 0 auto; padding: 20px; max-width: 100%; }
+      .card, .card-body, .card-header, .card-footer { border: none; box-shadow: none; padding: 0; display: block; overflow: visible; max-height: none;}
+      .no-print { display: none !important; }
+      .print-only { display: inline-block; }
+      h1 { margin-bottom: 20px; }
+      table, .table-wrapper { border: 1px solid #ccc; }
+      tbody input { border: none; background: transparent; padding: 4px 0; }
+      input[readonly] { color: var(--text); font-weight: normal; }
+      tfoot td, thead th { background: #eee; }
+      .summary { page-break-inside: avoid; }
+      .summary .box { border: 1px solid #ccc; }
+      .summary .box input { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <div class="card-header">
+        <div class="topbar">
+          <div>
+            <h1>Timber Estimate Calculator</h1>
+            <div class="date" id="today"></div>
+          </div>
+          <div class="controls no-print">
+            <button class="btn secondary" onclick="addRow()">Add Row</button>
+            <button class="btn secondary" onclick="clearTable()">Clear All</button>
+          </div>
+        </div>
+      </div>
+      
+      <div class="card-body">
+        <div class="table-wrapper">
+          <table id="grid">
+            <thead>
+              <tr>
+                <th style="width:5%">#</th>
+                <th style="width:10%">Qty</th>
+                <th style="width:15%">Length (ft)</th>
+                <th style="width:15%">Width (in)</th>
+                <th style="width:15%">Thickness (in)</th>
+                <th style="width:15%">Rate / CFT (₹)</th>
+                <th style="width:10%">CFT (calc)</th>
+                <th style="width:15%">Cost (₹)</th>
+                <th style="width:5%" class="no-print"></th>
+              </tr>
+            </thead>
+            <tbody id="body"></tbody>
+            <tfoot>
+              <tr>
+                <td colspan="6" style="text-align:right;">Totals:</td>
+                <td id="totalCFT" data-label="Total CFT">0.0000</td>
+                <td id="totalCost" data-label="Total Cost (₹)">0.00</td>
+                <td class="no-print"></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+      
+      <div class="card-footer">
+        <div class="summary">
+          <div class="box">
+            <div class="muted small">GST Percentage</div>
+            <input class="no-print" type="number" id="gst" value="18" min="0" step="0.01" oninput="recalc()" />
+            <span id="gstPrintValue" class="print-only"></span>
+          </div>
+          <div class="box">
+            <div class="muted small">GST Amount (₹)</div>
+            <div id="gstAmount" class="value-display" style="font-size: 1.1em;">0.00</div>
+          </div>
+          <div class="box">
+            <div class="muted small">Grand Total (₹)</div>
+            <div id="grandTotal" class="value-display" style="font-size: 1.3em;">0.00</div>
+          </div>
+        </div>
+        
+        <div class="actions no-print">
+          <button class="btn secondary" onclick="window.print()">Print Estimate</button>
+          <button class="btn" onclick="window.print()">Save as PDF</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const tbody = document.getElementById('body');
+    const totalCFTEl = document.getElementById('totalCFT');
+    const totalCostEl = document.getElementById('totalCost');
+    const gstEl = document.getElementById('gst');
+    const gstAmountEl = document.getElementById('gstAmount');
+    const grandTotalEl = document.getElementById('grandTotal');
+    const gstPrintValueEl = document.getElementById('gstPrintValue');
+
+    document.getElementById('today').textContent = new Date().toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' });
+
+    function toNum(v){ const n = parseFloat(v); return isNaN(n) ? 0 : n; }
+    function inchesToFeet(inches){ return inches / 12; }
+    function calcCFT(lengthFt, widthIn, thickIn){ return lengthFt * inchesToFeet(widthIn) * inchesToFeet(thickIn); }
+
+    function rowTemplate(){
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td class="row-number-cell"></td>
+        <td data-label="Quantity"><input type="number" min="0" step="1" placeholder="1" class="qty"></td>
+        <td data-label="Length (ft)"><input type="number" min="0" step="0.01" placeholder="8" class="len"></td>
+        <td data-label="Width (in)"><input type="number" min="0" step="0.01" placeholder="4" class="wid"></td>
+        <td data-label="Thickness (in)"><input type="number" min="0" step="0.01" placeholder="2.5" class="thk"></td>
+        <td data-label="Rate / CFT (₹)" class="rate-cell"><input type="number" min="0" step="0.01" placeholder="1200" class="rate"></td>
+        <td data-label="CFT (calc)" class="cft-cell"><input type="text" value="0.0000" class="cft" readonly></td>
+        <td data-label="Cost (₹)" class="cost-cell"><input type="text" value="0.00" class="cost" readonly></td>
+        <td class="remove-cell no-print"><button class="btn remove-btn" onclick="removeRow(this)" title="Remove Row">×</button></td>
+      `;
+      tr.querySelectorAll('input:not([readonly])').forEach(inp => {
+        inp.addEventListener('input', recalc);
+      });
+      return tr;
+    }
+
+    function addRow(){ 
+        const newRow = rowTemplate();
+        tbody.appendChild(newRow); 
+        newRow.querySelector('.qty').focus();
+    }
+
+    function removeRow(btn){
+      btn.closest('tr').remove();
+      recalc();
+    }
+
+    function clearTable(){
+      tbody.innerHTML = '';
+      addRow();
+      addRow();
+      recalc();
+    }
+
+    function formatCurrency(num) {
+        return new Intl.NumberFormat('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(num);
+    }
+
+    function recalc(){
+      let totalCFT = 0; let totalCost = 0;
+      Array.from(tbody.children).forEach(tr => {
+        const qty = toNum(tr.querySelector('.qty').value);
+        const len = toNum(tr.querySelector('.len').value);
+        const wid = toNum(tr.querySelector('.wid').value);
+        const thk = toNum(tr.querySelector('.thk').value);
+        const rate = toNum(tr.querySelector('.rate').value);
+
+        const cftTotal = calcCFT(len, wid, thk) * qty;
+        const cost = cftTotal * rate;
+
+        tr.querySelector('.cft').value = cftTotal.toFixed(4);
+        tr.querySelector('.cost').value = formatCurrency(cost);
+
+        totalCFT += cftTotal;
+        totalCost += cost;
+      });
+      totalCFTEl.textContent = totalCFT.toFixed(4);
+      totalCostEl.textContent = formatCurrency(totalCost);
+
+      const gstPct = toNum(gstEl.value);
+      const gstAmount = totalCost * gstPct / 100;
+      const grandTotal = totalCost + gstAmount;
+      
+      gstAmountEl.textContent = formatCurrency(gstAmount);
+      grandTotalEl.textContent = formatCurrency(grandTotal);
+      gstPrintValueEl.textContent = gstPct.toFixed(2) + ' %';
+    }
+
+    // Initialize
+    addRow();
+    addRow();
+    recalc();
+  </script>
+</body>
+</html>
