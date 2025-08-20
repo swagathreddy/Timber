@@ -72,6 +72,7 @@
       border-radius: 8px;
       background-color: #fff;
       transition: border-color 0.2s, box-shadow 0.2s;
+      font-size: 1rem; /* Base font size */
     }
     input::placeholder { color: #a0aec0; }
     input:focus {
@@ -173,6 +174,13 @@
     
     .print-only { display: none; }
 
+    /* FIX: Prevents auto-zoom on mobile inputs */
+    @media (max-width: 768px) {
+      input[type="number"], input[type="text"] {
+        font-size: 16px;
+      }
+    }
+
     /* Print Styles */
     @media print {
       body { background: #fff; font-size: 10pt; }
@@ -273,14 +281,13 @@
 
     function rowTemplate(){
       const tr = document.createElement('tr');
-      // Removed data-label and other mobile-specific classes
       tr.innerHTML = `
         <td class="row-number-cell"></td>
-        <td><input type="number" min="0" step="1" placeholder="1" class="qty"></td>
-        <td><input type="number" min="0" step="0.01" placeholder="8" class="len"></td>
-        <td><input type="number" min="0" step="0.01" placeholder="4" class="wid"></td>
-        <td><input type="number" min="0" step="0.01" placeholder="2.5" class="thk"></td>
-        <td><input type="number" min="0" step="0.01" placeholder="1200" class="rate"></td>
+        <td><input type="number" min="0" step="1" placeholder="e.g., 1" class="qty"></td>
+        <td><input type="number" min="0" step="0.01" placeholder="e.g., 8" class="len"></td>
+        <td><input type="number" min="0" step="0.01" placeholder="e.g., 4" class="wid"></td>
+        <td><input type="number" min="0" step="0.01" placeholder="e.g., 2.5" class="thk"></td>
+        <td><input type="number" min="0" step="0.01" placeholder="e.g., 1200" class="rate"></td>
         <td><input type="text" value="0.0000" class="cft" readonly></td>
         <td><input type="text" value="0.00" class="cost" readonly></td>
         <td class="no-print"><button class="btn remove-btn" onclick="removeRow(this)" title="Remove Row">×</button></td>
