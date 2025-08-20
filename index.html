@@ -37,14 +37,8 @@
       border: 1px solid var(--line);
       border-radius: 16px;
       box-shadow: 0 4px 6px -1px rgba(0,0,0,.04), 0 2px 4px -1px rgba(0,0,0,.03);
-      display: flex;
-      flex-direction: column;
-      max-height: calc(100vh - 64px);
+      padding: 24px;
     }
-    
-    .card-header { padding: 24px; }
-    .card-body { overflow-y: auto; padding: 0 24px; }
-    .card-footer { padding: 24px; margin-top: auto; }
     
     h1 {
       margin: 0 0 4px;
@@ -59,6 +53,7 @@
       align-items: center;
       justify-content: space-between;
       padding-bottom: 20px;
+      margin-bottom: 24px;
       border-bottom: 1px solid var(--line);
     }
     
@@ -106,7 +101,7 @@
 
     /* Table Styles */
     .table-wrapper { overflow-x: auto; border-radius: 12px; border: 1px solid var(--line); }
-    table { width: 100%; border-collapse: collapse; }
+    table { width: 100%; border-collapse: collapse; min-width: 800px; }
     tbody { counter-reset: row-number; }
     .row-number-cell::before {
       counter-increment: row-number;
@@ -147,7 +142,7 @@
     .remove-btn:hover { background: var(--danger); color: white; }
 
     /* Summary & Actions Styles */
-    .summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; }
+    .summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; margin-top: 24px;}
     .summary .box {
       border: 1px solid var(--line);
       border-radius: 12px;
@@ -178,88 +173,16 @@
     
     .print-only { display: none; }
 
-    /* Mobile Responsive Styles */
-    @media (max-width: 768px) {
-      .container { margin: 0; padding: 0; }
-      .card { border-radius: 0; border: none; max-height: 100vh; }
-      
-      .card-header {
-        position: sticky;
-        top: 0;
-        background: var(--card-bg);
-        z-index: 10;
-        padding: 16px;
-      }
-      .card-body { padding: 16px; flex-shrink: 1; }
-      .card-footer { padding: 16px; }
-      
-      h1 { font-size: 20px; }
-      
-      .table-wrapper { border: none; overflow: visible; }
-      table, thead, tbody, tfoot, tr { display: block; }
-      thead { display: none; }
-      
-      tbody tr {
-        border: 1px solid var(--line);
-        border-radius: 12px;
-        margin-bottom: 16px;
-        padding: 16px;
-        padding-top: 32px;
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 16px;
-        background: #fff !important;
-        position: relative;
-      }
-      tbody tr::before {
-        counter-increment: row-number;
-        content: "Item " counter(row-number);
-        position: absolute;
-        top: 10px;
-        left: 16px;
-        font-size: 12px;
-        font-weight: 700;
-        color: var(--text-light);
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-      }
-      .row-number-cell { display: none; }
-      
-      td {
-        border: none; padding: 0; text-align: left;
-        display: flex; flex-direction: column;
-      }
-      td::before {
-        content: attr(data-label);
-        font-weight: 500;
-        font-size: 13px;
-        color: var(--text-light);
-        margin-bottom: 6px;
-      }
-      td.rate-cell, td.remove-cell { grid-column: 1 / -1; }
-      td.remove-cell { align-items: center; margin-top: 8px; }
-      .remove-btn { width: 100%; border-radius: 8px; }
-      tbody input { text-align: left; font-size: 16px; }
-      
-      tfoot { border-top: 1px solid var(--line); padding-top: 16px; }
-      tfoot tr { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; }
-      tfoot td { text-align: right; padding: 4px 0; }
-      tfoot td:nth-child(1) { grid-column: 1 / -1; text-align: right; }
-      tfoot td:nth-child(2) { font-size:18px; }
-      tfoot td:nth-child(3) { display: none; }
-      tfoot td:nth-child(4) { font-size:18px; }
-      tfoot td::before { content: attr(data-label); text-align: left; font-weight: 600; }
-    }
-
     /* Print Styles */
     @media print {
       body { background: #fff; font-size: 10pt; }
       .container { margin: 0 auto; padding: 20px; max-width: 100%; }
-      .card, .card-body, .card-header, .card-footer { border: none; box-shadow: none; padding: 0; display: block; overflow: visible; max-height: none;}
+      .card { border: none; box-shadow: none; padding: 0; }
       .no-print { display: none !important; }
       .print-only { display: inline-block; }
       h1 { margin-bottom: 20px; }
-      table, .table-wrapper { border: 1px solid #ccc; }
+      table, .table-wrapper { border: 1px solid #ccc; overflow: visible; }
+      table { min-width: auto; }
       tbody input { border: none; background: transparent; padding: 4px 0; }
       input[readonly] { color: var(--text); font-weight: normal; }
       tfoot td, thead th { background: #eee; }
@@ -272,69 +195,63 @@
 <body>
   <div class="container">
     <div class="card">
-      <div class="card-header">
-        <div class="topbar">
-          <div>
-            <h1>Timber Estimate Calculator</h1>
-            <div class="date" id="today"></div>
-          </div>
-          <div class="controls no-print">
-            <button class="btn secondary" onclick="addRow()">Add Row</button>
-            <button class="btn secondary" onclick="clearTable()">Clear All</button>
-          </div>
+      <div class="topbar">
+        <div>
+          <h1>Timber Estimate Calculator</h1>
+          <div class="date" id="today"></div>
+        </div>
+        <div class="controls no-print">
+          <button class="btn secondary" onclick="addRow()">Add Row</button>
+          <button class="btn secondary" onclick="clearTable()">Clear All</button>
         </div>
       </div>
       
-      <div class="card-body">
-        <div class="table-wrapper">
-          <table id="grid">
-            <thead>
-              <tr>
-                <th style="width:5%">#</th>
-                <th style="width:10%">Qty</th>
-                <th style="width:15%">Length (ft)</th>
-                <th style="width:15%">Width (in)</th>
-                <th style="width:15%">Thickness (in)</th>
-                <th style="width:15%">Rate / CFT (₹)</th>
-                <th style="width:10%">CFT (calc)</th>
-                <th style="width:15%">Cost (₹)</th>
-                <th style="width:5%" class="no-print"></th>
-              </tr>
-            </thead>
-            <tbody id="body"></tbody>
-            <tfoot>
-              <tr>
-                <td colspan="6" style="text-align:right;">Totals:</td>
-                <td id="totalCFT" data-label="Total CFT">0.0000</td>
-                <td id="totalCost" data-label="Total Cost (₹)">0.00</td>
-                <td class="no-print"></td>
-              </tr>
-            </tfoot>
-          </table>
+      <div class="table-wrapper">
+        <table id="grid">
+          <thead>
+            <tr>
+              <th style="width:5%">#</th>
+              <th style="width:10%">Qty</th>
+              <th style="width:15%">Length (ft)</th>
+              <th style="width:15%">Width (in)</th>
+              <th style="width:15%">Thickness (in)</th>
+              <th style="width:15%">Rate / CFT (₹)</th>
+              <th style="width:10%">CFT (calc)</th>
+              <th style="width:15%">Cost (₹)</th>
+              <th style="width:5%" class="no-print"></th>
+            </tr>
+          </thead>
+          <tbody id="body"></tbody>
+          <tfoot>
+            <tr>
+              <td colspan="6" style="text-align:right;">Totals:</td>
+              <td id="totalCFT">0.0000</td>
+              <td id="totalCost">0.00</td>
+              <td class="no-print"></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+      
+      <div class="summary">
+        <div class="box">
+          <div class="muted small">GST Percentage</div>
+          <input class="no-print" type="number" id="gst" value="18" min="0" step="0.01" oninput="recalc()" />
+          <span id="gstPrintValue" class="print-only"></span>
+        </div>
+        <div class="box">
+          <div class="muted small">GST Amount (₹)</div>
+          <div id="gstAmount" class="value-display" style="font-size: 1.1em;">0.00</div>
+        </div>
+        <div class="box">
+          <div class="muted small">Grand Total (₹)</div>
+          <div id="grandTotal" class="value-display" style="font-size: 1.3em;">0.00</div>
         </div>
       </div>
       
-      <div class="card-footer">
-        <div class="summary">
-          <div class="box">
-            <div class="muted small">GST Percentage</div>
-            <input class="no-print" type="number" id="gst" value="18" min="0" step="0.01" oninput="recalc()" />
-            <span id="gstPrintValue" class="print-only"></span>
-          </div>
-          <div class="box">
-            <div class="muted small">GST Amount (₹)</div>
-            <div id="gstAmount" class="value-display" style="font-size: 1.1em;">0.00</div>
-          </div>
-          <div class="box">
-            <div class="muted small">Grand Total (₹)</div>
-            <div id="grandTotal" class="value-display" style="font-size: 1.3em;">0.00</div>
-          </div>
-        </div>
-        
-        <div class="actions no-print">
-          <button class="btn secondary" onclick="window.print()">Print Estimate</button>
-          <button class="btn" onclick="window.print()">Save as PDF</button>
-        </div>
+      <div class="actions no-print">
+        <button class="btn secondary" onclick="window.print()">Print Estimate</button>
+        <button class="btn" onclick="window.print()">Save as PDF</button>
       </div>
     </div>
   </div>
@@ -356,16 +273,17 @@
 
     function rowTemplate(){
       const tr = document.createElement('tr');
+      // Removed data-label and other mobile-specific classes
       tr.innerHTML = `
         <td class="row-number-cell"></td>
-        <td data-label="Quantity"><input type="number" min="0" step="1" placeholder="1" class="qty"></td>
-        <td data-label="Length (ft)"><input type="number" min="0" step="0.01" placeholder="8" class="len"></td>
-        <td data-label="Width (in)"><input type="number" min="0" step="0.01" placeholder="4" class="wid"></td>
-        <td data-label="Thickness (in)"><input type="number" min="0" step="0.01" placeholder="2.5" class="thk"></td>
-        <td data-label="Rate / CFT (₹)" class="rate-cell"><input type="number" min="0" step="0.01" placeholder="1200" class="rate"></td>
-        <td data-label="CFT (calc)" class="cft-cell"><input type="text" value="0.0000" class="cft" readonly></td>
-        <td data-label="Cost (₹)" class="cost-cell"><input type="text" value="0.00" class="cost" readonly></td>
-        <td class="remove-cell no-print"><button class="btn remove-btn" onclick="removeRow(this)" title="Remove Row">×</button></td>
+        <td><input type="number" min="0" step="1" placeholder="1" class="qty"></td>
+        <td><input type="number" min="0" step="0.01" placeholder="8" class="len"></td>
+        <td><input type="number" min="0" step="0.01" placeholder="4" class="wid"></td>
+        <td><input type="number" min="0" step="0.01" placeholder="2.5" class="thk"></td>
+        <td><input type="number" min="0" step="0.01" placeholder="1200" class="rate"></td>
+        <td><input type="text" value="0.0000" class="cft" readonly></td>
+        <td><input type="text" value="0.00" class="cost" readonly></td>
+        <td class="no-print"><button class="btn remove-btn" onclick="removeRow(this)" title="Remove Row">×</button></td>
       `;
       tr.querySelectorAll('input:not([readonly])').forEach(inp => {
         inp.addEventListener('input', recalc);
